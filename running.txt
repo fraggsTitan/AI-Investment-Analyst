@@ -1,0 +1,10 @@
+# 1. Save all files above
+# 2. Put your `master_scraper.py` and `frontend/` folder in place
+# 3. Start LIVE services (auto-pulls Ollama models)
+docker-compose up --build -d
+
+# 4. Bulk ingest 20K records (~10min, Ollama RAG auto-builds)
+docker-compose run --rm bulk-ingest python master_scraper.py
+
+# 5. Check status
+docker-compose ps

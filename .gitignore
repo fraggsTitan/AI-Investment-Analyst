@@ -1,0 +1,10 @@
+venv/ 
+data.json
+__pycache__/
+*.pyc
+logs/
+scraper_dedup.db/
+scraper.log/
+.env
+rag.db
+.vscode/

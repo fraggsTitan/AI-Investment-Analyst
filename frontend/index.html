@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🇮🇳 Startup Funding Intelligence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+
+<style>
+:root {
+  --bg: #0b1020;
+  --card: #111827;
+  --user: black;
+  --bot: #1f2937;
+  --border: #1f2937;
+  --text: #e5e7eb;
+  --accent: #93c5fd;
+}
+.source-toggle {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.source-list {
+  display: none;
+  margin-top: 6px;
+  margin-left: 8px;
+  font-size: 13px;
+}
+
+.source-list a {
+  display: block;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding-bottom: 140px;
+}
+
+.chat {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px 16px;
+}
+
+.message {
+  max-width: 85%;
+  padding: 16px 18px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.user {
+  background: var(--user);
+  margin-left: auto;
+  border-bottom-right-radius: 6px;
+}
+
+.bot {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 6px;
+}
+
+.sources {
+  font-size: 13px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+.input-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, var(--bg), transparent);
+  z-index: 20;
+}
+
+.input-box {
+  max-width: 900px;
+  margin: auto;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+input {
+  flex: 1;
+  padding: 14px 16px;
+  font-size: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  outline: none;
+}
+
+button {
+  border-radius: 14px;
+  border: none;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: #111827;
+  color: white;
+}
+
+button.secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.report {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 12px;
+}
+
+.main-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* enforce fixed layout */
+}
+
+.main-table th {
+  width: 30%; /* adjust if needed */
+  background: #0f172a;
+  text-align: left;
+  font-weight: 600;
+  color: #c7d2fe;
+  word-wrap: break-word; /* ensure long text wraps */
+}
+
+.main-table td {
+  width: 70%; /* rest of the space */
+  word-wrap: break-word;
+}
+
+.inner-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:6px;
+}
+.inner-table td{
+  border:1px solid var(--border);
+  padding:8px;
+}
+.inner-table td:first-child {
+  width: 40%;
+  word-wrap: break-word;
+}
+.inner-table td:last-child {
+  width: 60%;
+  word-wrap: break-word;
+}
+
+.footer{
+  margin-top:14px;
+  text-align:right;
+  font-size:13px;
+  color:#9ca3af;
+}
+</style>
+</head>
+
+<body>
+  <div id="page-title" style="
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    padding: 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+">
+    🇮🇳 Startup Funding Intelligence
+</div>
+<div id="greeting" style="
+    text-align: center;
+    padding: 16px;
+    background: var(--accent);
+    color: black;
+    font-weight: 600;
+    border-radius: 12px;
+    margin: 16px auto;
+    max-width: 600px;
+">
+    👋 Welcome! Ask about funding rounds, startups, or valuations…
+</div>
+
+
+<div id="chat" class="chat"></div>
+
+<div class="input-wrapper">
+  <div class="input-box">
+    <input id="query" placeholder="Ask about Zepto, Flipkart, funding rounds…" />
+    <button onclick="send()">Send</button>
+    <button class="secondary" onclick="exportDOCX()">📝 Export DOCX</button>
+  </div>
+</div>
+
+<script>
+const API = location.hostname === "localhost"
+  ? "http://localhost:8000"
+  : "http://rag-api:8000";
+
+let chatHistory = [];
+
+function appendMessage(html, cls="bot"){
+  const div = document.createElement("div");
+  div.className = "message " + cls;
+  div.innerHTML = html;
+  chat.appendChild(div);
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+}
+
+async function send(){
+  const q = query.value.trim();
+  if(!q) return;
+  appendMessage(q, "user");
+  query.value = "";
+
+  try{
+    const res = await fetch(API + "/rag",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({query:q})
+    });
+    const data = await res.json();
+    const structured = normalizeAnswer(data.answer);
+    chatHistory.push({
+      structured,      // store the structured rows
+      sources: data.sources || []
+    });
+    appendMessage(renderStructured(data));
+
+  }catch(e){
+    appendMessage("❌ Error fetching response","bot");
+    console.error(e);
+  }
+}
+
+
+
+function normalizeAnswer(text){
+  text = text.replace(/\*\*/g,'').replace(/\|/g,'');
+  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l);
+
+  const output = [];
+  let currentGroup = null;
+
+  lines.forEach(l=>{
+    if(l.endsWith(':')){
+      currentGroup = { key:l.replace(':',''), value:[] };
+      output.push(currentGroup);
+    } else if(l.includes(':')){
+      const p = l.split(':');
+      output.push({ key:p[0], value:p.slice(1).join(':').trim() });
+      currentGroup = null;
+    } else if(currentGroup){
+      currentGroup.value.push({
+        subKey:"Detail",
+        subValue:l.replace(/^[-•]/,'').trim()
+      });
+    }
+  });
+
+  return output.length ? output : [{key:"Summary", value:text}];
+}
+
+// ================= Full-width blocks & better spacing =================
+function renderStructured(data){
+  const structured = normalizeAnswer(data.answer);
+
+  let htmlBlocks = structured.map(row => {
+    if(typeof row.value === "string"){
+      return `<div style="
+        display:block;
+        margin:6px 0;
+        padding:12px;
+        background: var(--bot);
+        border:1px solid var(--border);
+        border-radius:12px;
+        width:100%;
+        word-break: break-word;
+      ">
+        <strong>${row.key}:</strong> ${row.value}
+      </div>`;
+    } else {
+      const subText = row.value.map(v=>`<strong>${v.subKey}:</strong> ${v.subValue}`).join("<br>");
+      return `<div style="
+        display:block;
+        margin:6px 0;
+        padding:12px;
+        background: var(--bot);
+        border:1px solid var(--border);
+        border-radius:12px;
+        width:100%;
+        word-break: break-word;
+      ">
+        <strong>${row.key}:</strong><br>${subText}
+      </div>`;
+    }
+  }).join("");
+
+  let sourcesHTML = "";
+  if(data.sources && data.sources.length){
+    sourcesHTML = `
+      <div class="sources">
+        <div class="source-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          📚 Sources (${data.sources.length}) - click to show/hide
+        </div>
+        <div class="source-list">
+          ${data.sources.map(s=>`<a href="${s.url}" target="_blank">${s.source}</a>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  return `<div class="report" style="display:flex; flex-direction:column; gap:8px;">
+    ${htmlBlocks}
+    ${sourcesHTML}
+    <div class="footer">Generated on ${new Date().toLocaleString()}</div>
+  </div>`;
+}
+
+// ================= PDF Export (Noto Sans for Hindi & spacing fixes) =================
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFont("Helvetica"); // For multi-language, embed NotoSans
+
+  doc.setFontSize(16);
+  doc.text("Startup Funding Intelligence – Chat Export", 10, 14);
+
+  let startY = 24;
+
+  chatHistory.forEach((item, i) => {
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text(`Q${i + 1}`, 10, startY);
+    startY += 6;
+    doc.setFont(undefined, "normal");
+
+    item.structured.forEach(row => {
+      if(Array.isArray(row.value)) {
+        // Convert array of details to table data
+        const headers = ["Field", "Detail"];
+        const data = row.value.map(v => [v.subKey, v.subValue]);
+        data.unshift([row.key, ""]); // group title as first row
+        doc.autoTable({
+          startY,
+          head: [headers],
+          body: data,
+          theme: 'grid',
+          headStyles: { fillColor: [15, 23, 42], textColor: 255 },
+          bodyStyles: { textColor: 255 },
+          styles: { fontSize: 10 },
+          margin: { left: 10, right: 10 },
+          didDrawPage: function (data) { startY = data.cursor.y + 6; }
+        });
+        startY = doc.lastAutoTable.finalY + 6;
+      } else {
+        doc.text(`${row.key}: ${row.value}`, 10, startY);
+        startY += 6;
+      }
+    });
+
+    if(item.sources && item.sources.length) {
+      doc.setFont(undefined, "bold");
+      doc.text("Sources:", 10, startY);
+      startY += 6;
+      doc.setFont(undefined, "normal");
+      item.sources.forEach(src => {
+        doc.text(`- ${src.source}: ${src.url}`, 12, startY);
+        startY += 6;
+      });
+    }
+
+    startY += 8;
+    if (startY > 270) doc.addPage(), startY = 10;
+  });
+
+  doc.save("startup-funding-chat.pdf");
+}
+
+// ================= DOCX Export (better paragraph spacing) =================
+async function exportDOCX() {
+  const { Document, Packer, Paragraph, TextRun } = docx;
+
+  const sections = chatHistory.map((item, i) => {
+    const children = [];
+
+    children.push(new Paragraph({ text: `Q${i+1}`, bold: true, spacing: { after: 200 } }));
+
+    item.structured.forEach(row => {
+      if (Array.isArray(row.value)) {
+        children.push(new Paragraph({ text: row.key, bold: true }));
+        row.value.forEach(sub => {
+          children.push(new Paragraph({ text: `${sub.subKey}: ${sub.subValue}`, spacing: { after: 100 } }));
+        });
+      } else {
+        children.push(new Paragraph({ text: `${row.key}: ${row.value}`, spacing: { after: 150 } }));
+      }
+    });
+
+    if (item.sources && item.sources.length) {
+      children.push(new Paragraph({ text: "Sources:", bold: true, spacing: { after: 100 } }));
+      item.sources.forEach(src => {
+        children.push(new Paragraph({ text: `- ${src.source}: ${src.url}`, spacing: { after: 100 } }));
+      });
+    }
+
+    return { children };
+  });
+
+  const doc = new Document({ sections });
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, "startup-funding-chat.docx");
+}
+// Remove greeting after 5 seconds
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const greeting = document.getElementById('greeting');
+        if(greeting){
+            greeting.style.transition = "opacity 0.6s";
+            greeting.style.opacity = 0;
+            setTimeout(()=> greeting.remove(), 600);
+        }
+    }, 5000); // 5 seconds
+});
+</script>
+</body>
+</html>
